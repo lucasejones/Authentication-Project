@@ -44,19 +44,16 @@ if signing_up_process is True and logging_in_process is False:
 	# adding the new user to the "database"
 	add_to_creds(signup_name, signup_pw)
 	# print(creds) <- definitely don't do this in production hahaha...
-	print(users.creds)
 	print('You\'ve successfully signed up, congratulations! Run the program '
 		'again to log in.')
 
 # if the user has chosen instead to log in
 elif signing_up_process is False and logging_in_process is True:
-	login_name, login_pw = log_in()
+	login_name, login_pw = logging_in.log_in()
 
 	def are_valid_credentials(username, password):
 		if username in users.creds:
-			if users.creds[username] == password:
-				return True
-		return False
+			return users.creds[username] == password
 
 	# granting access to the program or denying access
 	if are_valid_credentials(login_name, login_pw):
