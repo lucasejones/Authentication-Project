@@ -1,18 +1,28 @@
 import re
-import users
+import json
 
 
 def sign_up_func():
-	# if they'd like to sign up, get their username and password with certain
-	# constraints
+	'''
+	if they'd like to sign up, get their username and password with
+	certain constraints.
+	:returns:
+		str: login name
+		str: password
+
+	'''
+
 	valid_username_pattern = '^[a-zA-Z0-9]{5,24}$'
 	login_name = input(
 		'choose a username using at least 5 letters or numbers (max 24 characters): '
 	)
-	# while not re.match(valid_username_pattern, login_name):
-	# 	login_name = input(
-	# 		'choose a username using at least 5 letters or numbers (max 24 characters): ')
-	while login_name in users.creds:
+
+	total_userbase = {}
+	with open('users.txt', 'r') as file:
+		text_data = file.read()
+		total_userbase = json.loads(text_data)
+
+	while login_name in total_userbase:
 		login_name = input(
 			'Sorry, that username is already taken. Try again!: '
 		)

@@ -1,13 +1,17 @@
 import re
 import logging_in
 import sign_up
-import users
+import json
 
 # next steps:
 	# 1. permanently add each new user to the credentials dict each time
 		# there's a successful new signup.
+# 			Done! used json to create a users.txt that serves as the database
+# 			instead of the previous users.py file. for signup, wrote to this
+# 			new users.txt using json.dumps() to create a persistent copy of the
+# 			information, and for login, read from users.txt using json.loads().
 	# 2. implement hashing 
-	# 3. implement 2 factor authentication
+	# 3. implement 2-factor authentication
 	# 4. create some sort of non-bad UI (so anybody could use this)
 	# 5. add some actual functionality that's worth having an account and
 	# logging in for. consider using an api to grab some information and display
@@ -35,28 +39,34 @@ elif user_input == 'L':
 	logging_in_process = True
 
 
-# if the user has chosen to sign up
+# if the user has chosen to sign up:
 if signing_up_process is True and logging_in_process is False:
 	signup_name, signup_pw = sign_up.sign_up_func()
 
-	# function that adds new users to the "database"
-	def add_to_creds(username, password):
-		users.creds[username] = password
+	with open('users.txt') as json_file:
+		decoded_userbase = json.load(json_file)
 
+	decoded_userbase[signup_name] = signup_pw
 
-	# adding the new user to the "database"
-	add_to_creds(signup_name, signup_pw)
-	# print(creds) <- definitely don't do this in production hahaha...
+	with open('users.txt', 'w') as file:
+		file.write(json.dumps(decoded_userbase))
+
 	print('You\'ve successfully signed up, congratulations! Run the program '
 		'again to log in.')
 
-# if the user has chosen instead to log in
+
+# if the user has chosen instead to log in:
 elif signing_up_process is False and logging_in_process is True:
 	login_name, login_pw = logging_in.log_in()
 
+	total_userbase = {}
+	with open('users.txt', 'r') as file:
+		text_data = file.read()
+		total_userbase = json.loads(text_data)
+
 	def are_valid_credentials(username, password):
-		if username in users.creds:
-			return users.creds[username] == password
+		if username in total_userbase:
+			return total_userbase[username] == password
 
 	# granting access to the program or denying access
 	if are_valid_credentials(login_name, login_pw):
