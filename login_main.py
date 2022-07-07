@@ -2,6 +2,7 @@ import re
 import logging_in
 import sign_up
 import json
+from hashlib import sha256
 
 # next steps:
 	# 1. permanently add each new user to the credentials dict each time
@@ -10,7 +11,16 @@ import json
 # 			instead of the previous users.py file. for signup, wrote to this
 # 			new users.txt using json.dumps() to create a persistent copy of the
 # 			information, and for login, read from users.txt using json.loads().
-	# 2. implement hashing 
+	# 2. implement hashing
+# 			Done! used hashlib in the login_main file as well as the sign_up
+# 			file.
+# 				when registering, the user's password is never stored in
+# 			the database, and is instead converted into a hash. (although it
+# 			IS stored in a variable until the next user registers, how does
+# 			this ultimately affect the security?)
+#				when logging in, the user's un-hashed password is hashed,
+#				then compared against the hashed value in the database.
+		# 2a. add some salt to it!
 	# 3. implement 2-factor authentication
 	# 4. create some sort of non-bad UI (so anybody could use this)
 	# 5. add some actual functionality that's worth having an account and
@@ -38,6 +48,9 @@ elif user_input == 'L':
 	signing_up_process = False
 	logging_in_process = True
 
+# 1. when user signs up, store their pw as a hash in the database
+# 2. when user logs in, take their un-hashed pw, hash it, and check against
+# the database in the valid creds function
 
 # if the user has chosen to sign up:
 if signing_up_process is True and logging_in_process is False:
@@ -66,7 +79,8 @@ elif signing_up_process is False and logging_in_process is True:
 
 	def are_valid_credentials(username, password):
 		if username in total_userbase:
-			return total_userbase[username] == password
+			hashed_pw = sha256(password.encode('utf-8')).hexdigest()
+			return total_userbase[username] == hashed_pw
 
 	# granting access to the program or denying access
 	if are_valid_credentials(login_name, login_pw):

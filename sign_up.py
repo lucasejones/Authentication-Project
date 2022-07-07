@@ -1,5 +1,6 @@
 import re
 import json
+from hashlib import sha256
 
 
 def sign_up_func():
@@ -40,5 +41,7 @@ def sign_up_func():
 			'choose a password using at least 8 letters or numbers (max 24 characters): '
 		)
 
-	return login_name, login_password
+	hashed_login_pw = sha256(login_password.encode('utf-8')).hexdigest()
+
+	return login_name, hashed_login_pw
 
