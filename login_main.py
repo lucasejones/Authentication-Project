@@ -6,6 +6,9 @@ import users
 # next steps:
 	# 1. permanently add each new user to the credentials dict each time
 		# there's a successful new signup.
+	# 2. implement hashing 
+	# 3. implement 2 factor authentication
+	# 4. create some sort of non-bad UI (so anybody could use this)
 
 # prompting the user to decide what action they'd like to take
 user_input = input(
