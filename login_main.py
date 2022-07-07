@@ -9,6 +9,9 @@ import users
 	# 2. implement hashing 
 	# 3. implement 2 factor authentication
 	# 4. create some sort of non-bad UI (so anybody could use this)
+	# 5. add some actual functionality that's worth having an account and
+	# logging in for. consider using an api to grab some information and display
+	# it in your new UI as one way to achieve this.
 
 # prompting the user to decide what action they'd like to take
 user_input = input(
