@@ -2,9 +2,10 @@ import re
 import json
 from hashlib import sha256
 import secrets
+import setup_db
 
 
-def sign_up_func():
+def credential_acquisition():
 	'''
 	if they'd like to sign up, get their username and password under
 	certain criteria.
@@ -58,7 +59,17 @@ def sign_up_func():
 	return login_name, salt, hashed_login_pw
 
 
-def add_to_database(name, salt, pw):
+def add_to_database(name, pw, salt):
+	setup_db.cur.execute(
+	'''
+		INSERT INTO users
+		VALUES (?, ?, ?);
+	''', (name, pw, salt)
+	)
+	setup_db.con.commit()
+
+
+def add_to_config(name, salt, pw):
 	''' designed to take the return values from sign_up_func as arguments,
 	this function adds the user's name to the database. The key is the
 	username, and the value is a list containing their salted and hashed
