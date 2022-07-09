@@ -60,19 +60,11 @@ elif user_input == 'L':
 
 # if the user has chosen to sign up:
 if signing_up_process is True and logging_in_process is False:
+	# acquiring credentials and encrypting
 	signup_name, salt, signup_pw = sign_up.sign_up_func()
 
-	with open('users.txt') as json_file:
-		decoded_userbase = json.load(json_file)
-
-	# storing the hashed and salted password in the database
-	decoded_userbase[signup_name] = [signup_pw, salt]
-
-	with open('users.txt', 'w') as file:
-		file.write(json.dumps(decoded_userbase))
-
-	print('You\'ve successfully signed up, congratulations! Run the program '
-		'again to log in.')
+	# adding encrypted credentials to database
+	sign_up.add_to_database(signup_name, salt, signup_pw)
 
 
 # if the user has chosen instead to log in:

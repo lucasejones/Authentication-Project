@@ -58,6 +58,36 @@ def sign_up_func():
 	return login_name, salt, hashed_login_pw
 
 
+def add_to_database(name, salt, pw):
+	''' designed to take the return values from sign_up_func as arguments,
+	this function adds the user's name to the database. The key is the
+	username, and the value is a list containing their salted and hashed
+	password, as well as the individual salt.
+	:param name:
+		str: the user-entered login name
+	:param salt:
+		str: the individual salt
+	:param pw:
+		str: the hashed and salted password
+	:return:
+		str: message saying registration was successful
+	'''
+
+	with open('users.txt') as json_file:
+		decoded_userbase = json.load(json_file)
+
+	# storing the hashed and salted password in the database
+	decoded_userbase[name] = [pw, salt]
+
+	with open('users.txt', 'w') as file:
+		file.write(json.dumps(decoded_userbase))
+
+	return print(
+		'You\'ve successfully signed up, congratulations! Run the program '
+		'again to log in.'
+	)
+
+
 '''
 if even more security is needed, consider using the password-based key
 derivation function to benefit from iterations of the hashed and salted 
