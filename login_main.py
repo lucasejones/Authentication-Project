@@ -2,7 +2,8 @@ import re
 import logging_in
 import sign_up
 import json
-from hashlib import sha256
+import hashlib
+
 
 # next steps:
 	# 1. permanently add each new user to the credentials dict each time
@@ -12,8 +13,8 @@ from hashlib import sha256
 # 			new users.txt using json.dumps() to create a persistent copy of the
 # 			information, and for login, read from users.txt using json.loads().
 	# 2. implement hashing
-# 			Done! used hashlib in the login_main file as well as the sign_up
-# 			file.
+# 			Done! I used hashlib in the login_main file as well as the sign_up
+# 			file. Specifically, I chose sha-256 as the hash function.
 # 				when registering, the user's password is never stored in
 # 			the database, and is instead converted into a hash. (although it
 # 			IS stored in a variable until the next user registers, how does
@@ -21,6 +22,14 @@ from hashlib import sha256
 #				when logging in, the user's un-hashed password is hashed,
 #				then compared against the hashed value in the database.
 		# 2a. add some salt to it!
+#			Done! I added salt via the secrets library, recommended by the
+#			documentation for cryptographic use cases. The salt is generated
+#			upon registration, and stored alongside the hashed password and salt
+#			in
+#			the database. During login, the salt value is retrieved from the
+#			database, appended to the password, and hashed. This value is
+#			then compared against the hashed value from the database, and if
+#			it matches, the user is granted access.
 	# 3. implement 2-factor authentication
 	# 4. create some sort of non-bad UI (so anybody could use this)
 	# 5. add some actual functionality that's worth having an account and
@@ -48,18 +57,16 @@ elif user_input == 'L':
 	signing_up_process = False
 	logging_in_process = True
 
-# 1. when user signs up, store their pw as a hash in the database
-# 2. when user logs in, take their un-hashed pw, hash it, and check against
-# the database in the valid creds function
 
 # if the user has chosen to sign up:
 if signing_up_process is True and logging_in_process is False:
-	signup_name, signup_pw = sign_up.sign_up_func()
+	signup_name, salt, signup_pw = sign_up.sign_up_func()
 
 	with open('users.txt') as json_file:
 		decoded_userbase = json.load(json_file)
 
-	decoded_userbase[signup_name] = signup_pw
+	# storing the hashed and salted password in the database
+	decoded_userbase[signup_name] = [signup_pw, salt]
 
 	with open('users.txt', 'w') as file:
 		file.write(json.dumps(decoded_userbase))
@@ -72,15 +79,18 @@ if signing_up_process is True and logging_in_process is False:
 elif signing_up_process is False and logging_in_process is True:
 	login_name, login_pw = logging_in.log_in()
 
-	total_userbase = {}
 	with open('users.txt', 'r') as file:
 		text_data = file.read()
 		total_userbase = json.loads(text_data)
 
 	def are_valid_credentials(username, password):
 		if username in total_userbase:
-			hashed_pw = sha256(password.encode('utf-8')).hexdigest()
-			return total_userbase[username] == hashed_pw
+			login_salt = total_userbase[username][1]
+			salted_login_pw = password + login_salt
+			hashed_salted_login = hashlib.sha256(salted_login_pw.encode(
+				'utf-8')).hexdigest()
+			return total_userbase[username][0] == hashed_salted_login
+
 
 	# granting access to the program or denying access
 	if are_valid_credentials(login_name, login_pw):
