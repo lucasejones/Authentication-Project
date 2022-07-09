@@ -3,7 +3,7 @@ import logging_in
 import sign_up
 import json
 import hashlib
-
+import setup_db
 
 # next steps:
 	# 1. permanently add each new user to the credentials dict each time
@@ -61,30 +61,58 @@ elif user_input == 'L':
 # if the user has chosen to sign up:
 if signing_up_process is True and logging_in_process is False:
 	# acquiring credentials and encrypting
-	signup_name, salt, signup_pw = sign_up.sign_up_func()
+	signup_name, salt, signup_pw = sign_up.credential_acquisition()
 
-	# adding encrypted credentials to database
-	sign_up.add_to_database(signup_name, salt, signup_pw)
+	# # adding encrypted credentials to database
+	sign_up.add_to_database(signup_name, signup_pw, salt)
+
+	# adding encrypted credentials to config file
+	sign_up.add_to_config(signup_name, salt, signup_pw)
 
 
 # if the user has chosen instead to log in:
 elif signing_up_process is False and logging_in_process is True:
 	login_name, login_pw = logging_in.log_in()
 
-	with open('users.txt', 'r') as file:
-		text_data = file.read()
-		total_userbase = json.loads(text_data)
+	setup_db.cur.execute('''
+		SELECT * 
+		FROM users 
+		WHERE username is ?;
+	''', (login_name,))
+
+	fetched_user_data = setup_db.cur.fetchall()
+	# print(fetched_user_data)
+
+	formatted_fetched_pw = str(fetched_user_data[0][1])\
+		.replace("'",'')\
+		.replace(',', '')
+	formatted_fetched_salt = str(fetched_user_data[0][2])\
+		.replace("'",'')\
+		.replace(',','')
+
+	# only applicable to pulling from config file:
+	# with open('users.txt', 'r') as file:
+	# 	text_data = file.read()
+	# 	total_userbase = json.loads(text_data)
 
 	def are_valid_credentials(username, password):
-		if username in total_userbase:
-			login_salt = total_userbase[username][1]
-			salted_login_pw = password + login_salt
-			hashed_salted_login = hashlib.sha256(salted_login_pw.encode(
-				'utf-8')).hexdigest()
-			return total_userbase[username][0] == hashed_salted_login
+		salted_login_pw = password + formatted_fetched_salt
+		hashed_salted_login = hashlib.sha256(salted_login_pw.encode(
+			'utf-8')).hexdigest()
+		return formatted_fetched_pw == hashed_salted_login
 
 
-	# granting access to the program or denying access
+
+		# only applicable to pulling from config file:
+		# if username in total_userbase:
+		# 	login_salt = total_userbase[username][1]
+		# 	salted_login_pw = password + login_salt
+		# 	hashed_salted_login = hashlib.sha256(salted_login_pw.encode(
+		# 		'utf-8')).hexdigest()
+		# 	return total_userbase[username][0] == hashed_salted_login
+
+
+	# granting or denying access to the program
 	if are_valid_credentials(login_name, login_pw):
 		print('You\'re in!')
 	else:
