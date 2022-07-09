@@ -6,8 +6,8 @@ import secrets
 
 def sign_up_func():
 	'''
-	if they'd like to sign up, get their username and password with
-	certain constraints.
+	if they'd like to sign up, get their username and password under
+	certain criteria.
 	:returns:
 		str: login name
 		str: password
