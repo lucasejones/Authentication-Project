@@ -1,53 +1,60 @@
 import re
-import json
 from hashlib import sha256
 import secrets
 import setup_db
 
 
 def credential_acquisition():
-	'''
-	if they'd like to sign up, get their username and password under
-	certain criteria.
+	"""
+	if they'd like to sign up, get their username and password, satisfying
+	certain criteria. This function also hashes the supplied password, and adds a salt.
 	:returns:
 		str: login name
 		str: password
+		str: the randomly generated salt
+	"""
 
-	'''
+	valid_username_criteria = '^[a-zA-Z0-9]{5,24}$'
+	valid_password_criteria = '^[a-zA-Z0-9]{8,24}$'
 
 	# getting the new user's username
-	valid_username_pattern = '^[a-zA-Z0-9]{5,24}$'
-	login_name = input(
-		'choose a username using at least 5 letters or numbers (max 24 characters): '
-	)
-
-	# checking against the database to ensure a unique username is chosen
-	total_userbase = {}
-	with open('users.txt', 'r') as file:
-		text_data = file.read()
-		total_userbase = json.loads(text_data)
-
-	while login_name in total_userbase:
+	while True:
 		login_name = input(
-			'Sorry, that username is already taken. Try again!: '
+			'Choose a username using at least 5 letters or numbers (max 24 characters): '
 		)
 
-	# checking that a username fits the criteria
-	while not re.match(valid_username_pattern, login_name):
-		login_name = input(
-			'choose a username using at least 5 letters or numbers (max 24 characters): '
+		# checking that a username fits the criteria
+		while not re.match(valid_username_criteria, login_name):
+			login_name = input(
+				'Choose a username using at least 5 letters or numbers (max 24 '
+				'characters): '
+			)
+
+		# comparing against the database to ensure a unique username is chosen
+		setup_db.cur.execute(
+			'''
+				SELECT username 
+				FROM users
+				WHERE username is ?;
+			''', (login_name,)
 		)
+
+		duplicate_name = setup_db.cur.fetchall()
+		if not duplicate_name:
+			break
+		else:
+			print('Sorry, that username is already taken. Try again!')
+
 
 	# getting the new user's password
-	valid_password_pattern = '^[a-zA-Z0-9]{8,24}$'
 	login_password = input(
-		'choose a password using at least 8 letters or numbers (max 24 characters): '
+		'Choose a password using at least 8 letters or numbers (max 24 characters): '
 	)
 
 	# checking that the password fits the criteria
-	while not re.match(valid_password_pattern, login_password):
+	while not re.match(valid_password_criteria, login_password):
 		login_password = input(
-			'choose a password using at least 8 letters or numbers (max 24 characters): '
+			'Choose a password using at least 8 letters or numbers (max 24 characters): '
 		)
 
 	# improving security by hashing and salting
@@ -56,57 +63,22 @@ def credential_acquisition():
 	hashed_login_pw = sha256(salted_login_pw.encode('utf-8')).hexdigest()
 
 
-	return login_name, salt, hashed_login_pw
+	return login_name, hashed_login_pw, salt
 
 
 def add_to_database(name, pw, salt):
+	"""
+	Takes as inputs the return values from the credential_acquisition function and adds
+	the name, hashed password, and salt into the database.
+	:param name: (str) the supplied username
+	:param pw: (str) the hashed password
+	:param salt: (str) the randomly generated salt
+	:return: no return value.
+	"""
 	setup_db.cur.execute(
-	'''
+		'''
 		INSERT INTO users
 		VALUES (?, ?, ?);
-	''', (name, pw, salt)
+		''', (name, pw, salt)
 	)
 	setup_db.con.commit()
-
-
-def add_to_config(name, salt, pw):
-	''' designed to take the return values from sign_up_func as arguments,
-	this function adds the user's name to the database. The key is the
-	username, and the value is a list containing their salted and hashed
-	password, as well as the individual salt.
-	:param name:
-		str: the user-entered login name
-	:param salt:
-		str: the individual salt
-	:param pw:
-		str: the hashed and salted password
-	:return:
-		str: message saying registration was successful
-	'''
-
-	with open('users.txt') as json_file:
-		decoded_userbase = json.load(json_file)
-
-	# storing the hashed and salted password in the database
-	decoded_userbase[name] = [pw, salt]
-
-	with open('users.txt', 'w') as file:
-		file.write(json.dumps(decoded_userbase))
-
-	return print(
-		'You\'ve successfully signed up, congratulations! Run the program '
-		'again to log in.'
-	)
-
-
-'''
-if even more security is needed, consider using the password-based key
-derivation function to benefit from iterations of the hashed and salted 
-password: 
-
-salt = secrets.token_bytes(32)
-plaintext = login_password.encode('utf-8')
-iterations = 10000
-dk = hashlib.pbkdf2_hmac('sha256', plaintext, salt, iterations)
-hashed_and_salted_login_pw = dk.hex()
-'''
