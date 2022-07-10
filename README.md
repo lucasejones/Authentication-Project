@@ -26,7 +26,7 @@ Done! I added salt via the secrets library, recommended by the documentation for
    
 4. ### ~~Store user data in a database instead of a JSON config~~ 
 
-Done! Used sqlite3 to locally store and retrieve all user data.
+Done! Used sqlite3 to locally store and retrieve all user data. For posterity, all the JSON logic can be found in the sqlite-and-config branch. 
 
 5. ### Implement 2-factor authentication
 
