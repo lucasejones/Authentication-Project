@@ -1,4 +1,6 @@
 # Authentication-Project
+
+##To use this program, run login_main.py.## This will begin a series of prompts, that when followed, allow a user to either sign up or log in. If signing up, your name and password will be stored securely in an SQL database. If logging in, your credentials will be compared against that database, and a correct set of credentials will grant you access to the application. 
  
 This is a toy project to practice different ways to ensure secure login information for a given user. Eventually I'd like to add two-factor authentication to get experience implementing more strict security practices. In the meantime, I intend to add functionality for successfully logged-in users as well as a UI to facilitate using this program outside the terminal.
 
