@@ -2,7 +2,6 @@ import re
 import logging_in
 import sign_up
 
-
 # prompting the user to decide what action they'd like to take
 user_input = input(
 	'are you signing up or logging in? Enter "S" for signing up, '
