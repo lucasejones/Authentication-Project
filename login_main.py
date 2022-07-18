@@ -2,24 +2,43 @@ import re
 import logging_in
 import sign_up
 
-# prompting the user to decide what action they'd like to take
-user_input = input(
-	'are you signing up or logging in? Enter "S" for signing up, '
-	'or enter "L" for logging in.'
-)
 
-
-# ensuring the user's response is either a valid sign-up or login request
-intro_action_pattern = '^[SL]'
-while not re.match(intro_action_pattern, user_input) or len(user_input) != 1:
-	user_input = input(
+def get_user_desired_action():
+	"""
+	prompts the user to decide what action they'd like to take: to sign up or log in
+	:returns:
+		str: 'S' or 'L'
+	"""
+	user_input_message = input(
 		'are you signing up or logging in? Enter "S" for signing up, '
 		'or enter "L" for logging in.'
 	)
+	return user_input_message
+
+
+def checking_valid_action(user_input):
+	"""
+	ensures the user's response is either a valid sign-up or login request
+	:returns:
+		bool: True if the response is valid, False if not
+	"""
+	valid_action_pattern = '^[SL]'
+	if not re.match(valid_action_pattern, user_input) or len(user_input) != 1:
+		return False
+	return True
+
+
+user_decision = get_user_desired_action()
+is_valid_action = checking_valid_action(user_decision)
+
+while is_valid_action is False:
+	user_decision = get_user_desired_action()
+	is_valid_action = checking_valid_action(user_decision)
+
 
 
 # if the user has chosen to sign up:
-if user_input == 'S':
+if user_decision == 'S':
 	# acquiring credentials and encrypting
 	signup_name, signup_pw, salt = sign_up.credential_acquisition()
 
@@ -33,7 +52,7 @@ if user_input == 'S':
 
 
 # if the user has chosen instead to log in:
-elif user_input == 'L':
+elif user_decision == 'L':
 	# acquiring name and password user inputs
 	login_name, login_pw = logging_in.log_in()
 
@@ -42,3 +61,4 @@ elif user_input == 'L':
 		print('You\'re in!')
 	else:
 		print('Sorry, those credentials are invalid. Please try again.')
+
