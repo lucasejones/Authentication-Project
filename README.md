@@ -6,6 +6,28 @@ followed, allow a user to either sign up or log in. If signing up, your name and
 This is a toy project to practice different ways to ensure secure login information for a given user. I relied on Robert Heaton's fantastic [blog](https://robertheaton.com/2019/08/12/programming-projects-for-advanced-beginners-user-logins/) for the idea and general steps. Eventually I'd like to add two-factor authentication to get experience implementing more strict security practices. In the meantime, I intend to add functionality for successfully logged-in users as well as a UI to facilitate using this program outside the terminal.
 
 
+### How this all works in more detail:
+First, the user inputs whether they'd like to sign up or log in.
+
+***To sign up:*** \
+The user inputs a username which is checked for validity and uniqueness against the database. \
+The user then inputs a password, which is also checked for validity. \
+A randomly-generated 32-bit salt is then created and added to the database. \
+The user password and the salt are combined and hashed using sha256 encryption, the result 
+of which is also 
+added to 
+the 
+database. This value will be used to compare against future log-in attempts.
+
+***To log in:*** \
+When a user logs in, they supply a username and a password. \
+If a username is valid, the corresponding salt from the database is retrieved. \
+The inputted password is combined with the retrieved salt and hashed with the same encryption 
+process as during sign-up. \
+The resulting hash value is compared against the database's hash value. \
+If the two are the same, the user is granted access.
+
+
 ## Next steps:
 1. ### ~~Persist user data across each new signup~~
     

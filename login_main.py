@@ -2,21 +2,6 @@ import user_action
 import logging_in
 import sign_up
 
-"""
-How this all works:
-first, the user inputs whether they'd like to sign up or log in.
-
-to sign up:
-the user inputs a username and that's checked for validity and uniqueness against the database.
-the user then inputs a password, which is also checked for validity.
-a salt is then created and added to the db. the user pw and the salt are combined and hashed, 
-which is also added to the db.
-
-to log in:
-when a user logs in, they supply a pw. this pw is combined with the salt from the db and hashed. 
-if the two are the same, the user is granted access.
-"""
-
 
 if __name__ == '__main__':
 
