@@ -1,35 +1,27 @@
-import setup_db
-import hashlib
+import sqlite3
 
 
-def log_in():
+def get_login_username() -> str:
 	"""
-	obtains and returns the name and password inputs from the user
+	obtains and returns the name input from the user
 	"""
-
 	name = input('enter username: ')
+	return name
+
+
+def get_login_password() -> str:
+	"""
+	obtains and returns the password input from the user
+	"""
 	pw = input('enter password: ')
+	return pw
 
-	return name, pw
 
-
-def are_valid_credentials(username, password):
-	"""
-	This function does three things: First, it queries the database for a
-	match of the user-input username. Then it obtains and
-	formats the hashed password and corresponding salt. Finally, it combines the
-	user-input password with the salt, hashes that combination, and compares
-	against the database's password.
-	:param username: (str) the user-input username to be checked against the
-	database
-	:param password: (str) the user-input password to be checked against the
-	database
-	:returns: Bool: True if the user-input credentials match those in the
-	database, False if not
-	"""
-
-	# querying the database
-	setup_db.cur.execute(
+def find_user(username: str) -> list:
+	# querying the database for the user
+	con = sqlite3.connect('all_users.db')
+	cur = con.cursor()
+	cur.execute(
 		'''
 			SELECT * 
 			FROM users 
@@ -37,23 +29,34 @@ def are_valid_credentials(username, password):
 		''', (username,)
 	)
 
-	# obtaining and formatting the password and salt
-	fetched_user_data = setup_db.cur.fetchall()
+	fetched_user_data = cur.fetchall()
+	return fetched_user_data
 
+
+def format_fetched_password(fetched_user_data: list) -> str:
+	"""
+	takes the password from the fetched user data and modifies the string to be usable for
+	comparison later
+	"""
 	formatted_fetched_pw = str(fetched_user_data[0][1]) \
-		.replace("'", '') \
-		.replace(',', '')
+		.replace("'", '')
+	return formatted_fetched_pw
+
+
+def format_fetched_salt(fetched_user_data: list) -> str:
+	"""
+	takes the salt from the fetched user data and modifies the string to be usable for
+	comparison later
+	"""
 	formatted_fetched_salt = str(fetched_user_data[0][2]) \
-		.replace("'", '') \
-		.replace(',', '')
-
-	# combining the password and salt and hashing the result
-	salted_login_pw = password + formatted_fetched_salt
-	hashed_salted_login = hashlib.sha256(salted_login_pw.encode(
-		'utf-8')).hexdigest()
+		.replace("'", '')
+	return formatted_fetched_salt
 
 
-	# comparing the result against the database
-	return formatted_fetched_pw == hashed_salted_login
-		# note that if invalid, we don't say if either one was valid because this would
-		# let nefarious actors get additional information.
+def compare_fetched_pw_to_input_pw(formatted_fetched_pw: str, input_password: str) \
+		-> bool:
+	"""
+	compares the encrypted inputted password against the encrypted database password.
+	returns True if they match, False if they don't.
+	"""
+	return formatted_fetched_pw == input_password

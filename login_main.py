@@ -1,77 +1,86 @@
-import re
+import user_action
 import logging_in
 import sign_up
 
-#_____________________________
-# __________________________
-# toy functions to experiment with unit testing strategy
-#_______________________________________________________
-def add_these(x: int, y: int) -> int:
-	"""takes two numbers and returns their sum"""
-	return x + y
+"""
+How this all works:
+first, the user inputs whether they'd like to sign up or log in.
 
+to sign up:
+the user inputs a username and that's checked for validity and uniqueness against the database.
+the user then inputs a password, which is also checked for validity.
+a salt is then created and added to the db. the user pw and the salt are combined and hashed, 
+which is also added to the db.
 
-def subtract_these(x, y):
-	return x - y
-#_______________________________________________________
-
-
-def get_user_desired_action():
-	"""
-	prompts the user to decide what action they'd like to take: to sign up or log in
-	:returns:
-		str: 'S' or 'L'
-	"""
-	user_input_message = input(
-		'are you signing up or logging in? Enter "S" for signing up, '
-		'or enter "L" for logging in.'
-	)
-	return user_input_message
-
-
-def checking_valid_action(user_input):
-	"""
-	ensures the user's response is either a valid sign-up or login request
-	:returns:
-		bool: True if the response is valid, False if not
-	"""
-	valid_action_pattern = '^[SL]'
-	if not re.match(valid_action_pattern, user_input) or len(user_input) != 1:
-		return False
-	return True
+to log in:
+when a user logs in, they supply a pw. this pw is combined with the salt from the db and hashed. 
+if the two are the same, the user is granted access.
+"""
 
 
 if __name__ == '__main__':
-	user_decision = get_user_desired_action()
-	is_valid_action = checking_valid_action(user_decision)
 
-	while is_valid_action is False:
-		user_decision = get_user_desired_action()
-		is_valid_action = checking_valid_action(user_decision)
-
-
+	# obtaining a valid action from the user
+	while True:
+		user_desired_action = user_action.get_user_desired_action()
+		is_valid_action = user_action.check_valid_action(user_desired_action)
+		if is_valid_action is True:
+			break
 
 	# if the user has chosen to sign up:
-	if user_decision == 'S':
-		# acquiring credentials and encrypting
-		signup_name, signup_pw, salt = sign_up.credential_acquisition()
+	if user_desired_action == 'S':
+		sign_up.create_db_if_first_user()
 
-		# adding encrypted credentials to database
-		sign_up.add_to_database(signup_name, signup_pw, salt)
+		# obtaining a valid and unique username
+		while True:
+			input_username = sign_up.get_input_username()
+			if sign_up.check_valid_input_username(input_username) is False:
+				print('Sorry, that username is invalid. Try again!')
+				continue
+			if sign_up.check_existing_username(input_username) is True:
+				print('Sorry, that username is already taken. Try again!')
+				continue
+			break
+
+		# obtaining a valid password
+		while True:
+			input_password = sign_up.get_input_password()
+			if sign_up.check_valid_input_password(input_password) is True:
+				break
+			print('Sorry, that password is invalid. Try again!')
+
+		# improving security by salting and hashing the password
+		salt = sign_up.create_salt()
+		hashed_login_pw = sign_up.create_hashed_salted_password(input_password, salt)
+		sign_up.add_to_database(input_username, hashed_login_pw, salt)
 
 		print(
 			'You\'ve successfully signed up, congratulations! Run the program '
 			'again to log in.'
 		)
 
-
 	# if the user has chosen instead to log in:
-	elif user_decision == 'L':
+	elif user_desired_action == 'L':
 		# acquiring name and password user inputs
-		login_name, login_pw = logging_in.log_in()
+		login_name = logging_in.get_login_username()
+		login_pw = logging_in.get_login_password()
 
-		# granting or denying access to the program
-		if logging_in.are_valid_credentials(login_name, login_pw):
-			print('You\'re in!')
+		# obtaining user data from the database
+		found_user_data = logging_in.find_user(login_name)
+
+		# if the username is in the database then format the data, encrypt the supplied password,
+		# and compare it for validity.
+		if len(found_user_data) == 1:
+			formatted_found_password = logging_in.format_fetched_password(found_user_data)
+			formatted_found_salt = logging_in.format_fetched_salt(found_user_data)
+			encrypted_input_password = sign_up.create_hashed_salted_password(login_pw,
+				formatted_found_salt)
+			valid_credentials = logging_in.compare_fetched_pw_to_input_pw(formatted_found_password,
+				encrypted_input_password)
+
+			if valid_credentials:
+				print('You\'re in!')
+			else:
+				print('Sorry, those credentials are invalid. Please try again.')
 		else:
-			print('Sorry, those credentials are invalid. Please try again.')
+			print('Sorry, those credentials are invalid. Please try again')
