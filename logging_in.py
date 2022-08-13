@@ -33,26 +33,6 @@ def find_user(username: str) -> list:
 	return fetched_user_data
 
 
-def format_fetched_password(fetched_user_data: list) -> str:
-	"""
-	takes the password from the fetched user data and modifies the string to be usable for
-	comparison later
-	"""
-	formatted_fetched_pw = str(fetched_user_data[0][1]) \
-		.replace("'", '')
-	return formatted_fetched_pw
-
-
-def format_fetched_salt(fetched_user_data: list) -> str:
-	"""
-	takes the salt from the fetched user data and modifies the string to be usable for
-	comparison later
-	"""
-	formatted_fetched_salt = str(fetched_user_data[0][2]) \
-		.replace("'", '')
-	return formatted_fetched_salt
-
-
 def compare_fetched_pw_to_input_pw(formatted_fetched_pw: str, input_password: str) \
 		-> bool:
 	"""

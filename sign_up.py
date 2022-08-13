@@ -21,7 +21,8 @@ def create_db_if_first_user() -> None:
 		'''
 	)
 	# cur.execute('''SELECT * FROM users''')
-	# print(cur.fetchall())  # <-- definitely don't do this in production hahaha...
+	# print(cur.fetchall())  # <-- This is just for quick debugging!
+	# definitely do NOT do this in production (haha)...
 
 
 def get_input_username() -> str:

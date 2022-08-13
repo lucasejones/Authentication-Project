@@ -56,11 +56,13 @@ if __name__ == '__main__':
 		# if the username is in the database then format the data, encrypt the supplied password,
 		# and compare it for validity.
 		if len(found_user_data) == 1:
-			formatted_found_password = logging_in.format_fetched_password(found_user_data)
-			formatted_found_salt = logging_in.format_fetched_salt(found_user_data)
+			found_user_data = found_user_data.pop()
+			found_password = found_user_data[1]
+			found_salt = found_user_data[2]
+
 			encrypted_input_password = sign_up.create_hashed_salted_password(login_pw,
-				formatted_found_salt)
-			valid_credentials = logging_in.compare_fetched_pw_to_input_pw(formatted_found_password,
+				found_salt)
+			valid_credentials = logging_in.compare_fetched_pw_to_input_pw(found_password,
 				encrypted_input_password)
 
 			if valid_credentials:
