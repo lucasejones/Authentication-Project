@@ -18,7 +18,9 @@ if __name__ == '__main__':
 
 		# obtaining a valid and unique username
 		while True:
-			input_username = sign_up.get_input_username()
+			input_username = input(
+				'Choose a username using at least 5 letters or numbers (max 24 characters): '
+			)
 			if sign_up.check_valid_input_username(input_username) is False:
 				print('Sorry, that username is invalid. Try again!')
 				continue
@@ -29,7 +31,9 @@ if __name__ == '__main__':
 
 		# obtaining a valid password
 		while True:
-			input_password = sign_up.get_input_password()
+			input_password = input(
+				'Choose a password using at least 8 letters or numbers (max 24 characters): '
+			)
 			if sign_up.check_valid_input_password(input_password) is True:
 				break
 			print('Sorry, that password is invalid. Try again!')
@@ -47,14 +51,14 @@ if __name__ == '__main__':
 	# if the user has chosen instead to log in:
 	elif user_desired_action == 'L':
 		# acquiring name and password user inputs
-		login_name = logging_in.get_login_username()
-		login_pw = logging_in.get_login_password()
+		login_name = input('enter username: ')
+		login_pw = input('enter password: ')
 
 		# obtaining user data from the database
 		found_user_data = logging_in.find_user(login_name)
 
-		# if the username is in the database then format the data, encrypt the supplied password,
-		# and compare it for validity.
+		# if the username is in the database and doubly checked for uniqueness, encrypt the
+		# supplied password, and compare the passwords for validity.
 		if len(found_user_data) == 1:
 			found_user_data = found_user_data.pop()
 			found_password = found_user_data[1]
@@ -62,8 +66,11 @@ if __name__ == '__main__':
 
 			encrypted_input_password = sign_up.create_hashed_salted_password(login_pw,
 				found_salt)
-			valid_credentials = logging_in.compare_fetched_pw_to_input_pw(found_password,
-				encrypted_input_password)
+
+			valid_credentials = False
+
+			if encrypted_input_password == found_password:
+				valid_credentials = True
 
 			if valid_credentials:
 				print('You\'re in!')

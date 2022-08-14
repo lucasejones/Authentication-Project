@@ -25,16 +25,6 @@ def create_db_if_first_user() -> None:
 	# definitely do NOT do this in production (haha)...
 
 
-def get_input_username() -> str:
-	"""
-	gets the new user's inputted username and returns it as a string
-	"""
-	username = input(
-		'Choose a username using at least 5 letters or numbers (max 24 characters): '
-	)
-	return username
-
-
 def check_valid_input_username(intended_username: str) -> bool:
 	"""
 	checks that the inputted username fits the criteria and returns True if so, False if not.
@@ -65,16 +55,6 @@ def check_existing_username(intended_username: str) -> bool:
 	if duplicate_name:
 		return True
 	return False
-
-
-def get_input_password() -> str:
-	"""
-	gets the new user's inputted password and returns it as a string
-	"""
-	login_password = input(
-		'Choose a password using at least 8 letters or numbers (max 24 characters): '
-	)
-	return login_password
 
 
 def check_valid_input_password(intended_password: str) -> bool:
